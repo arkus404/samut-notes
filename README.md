@@ -1,2 +1,5 @@
-# samut-notes
-สมุด — แอปโน้ตมินิมอล แก้ไข้มาร์กดาวน์ ค้นหาทันที เก็บในเบราว์เซอร์
+# Samut
+
+Minimal markdown notes. Instant search, localStorage, keyboard-first.
+
+Open index.html in a browser.
