@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang='th'>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1, viewport-fit=cover'>
+<meta name='theme-color' content='#f2ebe0'>
+<title>สมุด</title>
+<link rel='icon' href='favicon.svg' type='image/svg+xml'>
+<link rel='preconnect' href='https://fonts.googleapis.com'>
+<link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
+<link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Noto+Serif+Thai:wght@400;500;600;700&display=swap' rel='stylesheet'>
+<style>
+:root{
+  --paper:#f2ebe0;--ink:#1a1613;--muted:#6f675c;--faint:#a3998c;--panel:#ebe3d6;--hover:#e3dacb;
+  --line:color-mix(in srgb,var(--ink) 12%,transparent);--accent:#9c3b2a;
+  --accent-soft:color-mix(in srgb,var(--accent) 14%,var(--paper));--danger:#8a2a22;
+  --side:272px;--radius:8px;
+  --ui:'IBM Plex Sans Thai',system-ui,sans-serif;
+  --write:'Noto Serif Thai','Noto Serif',Georgia,serif;
+  --fast:160ms;--med:220ms;--ease:cubic-bezier(.2,.7,.2,1);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:var(--ui);background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased;overflow:hidden}
+button,[role=button]:not(:disabled){cursor:pointer}
+button{font:inherit;color:inherit;background:none;border:0;padding:0}
+input,textarea{font:inherit;color:inherit;background:none;border:0;outline:none}
+:focus{outline:none}:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);height:100dvh;transition:grid-template-columns var(--med) var(--ease)}
+#app.sidebar-collapsed{--side:0px}
+#sidebar{display:flex;flex-direction:column;min-width:0;border-right:1px solid var(--line);background:var(--panel);overflow:hidden}
+#app.sidebar-collapsed #sidebar{pointer-events:none}
+.side-head{display:flex;align-items:center;gap:8px;padding:14px 14px 10px;min-height:52px}
+.brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0;color:inherit;text-decoration:none}
+.brand-name{font-family:var(--write);font-weight:600;font-size:18px;letter-spacing:.04em;line-height:1}
+.icon-btn{width:36px;height:36px;display:grid;place-items:center;border-radius:var(--radius);color:var(--muted);flex:none}
+.icon-btn:hover{background:var(--hover);color:var(--ink)}
+.icon-btn.primary{color:var(--accent)}
+.icon-btn.primary:hover{background:var(--accent-soft);color:var(--accent)}
+.icon-btn.danger:hover{background:color-mix(in srgb,var(--danger) 12%,var(--paper));color:var(--danger)}
+.icon-btn svg{width:18px;height:18px}
+.search{margin:0 12px 10px;display:flex;align-items:center;gap:8px;height:36px;padding:0 10px;border-radius:var(--radius);background:color-mix(in srgb,var(--paper) 70%,transparent);border:1px solid var(--line)}
+.search:focus-within{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.search svg{color:var(--faint);flex:none;width:16px;height:16px}
+.search input{flex:1;min-width:0;font-size:13px}
+.search input::placeholder{color:var(--faint)}
+.search kbd{font:10px var(--ui);color:var(--faint);border:1px solid var(--line);border-radius:4px;padding:0 5px;height:18px;display:grid;place-items:center}
+#list{list-style:none;margin:0;padding:4px 8px 12px;overflow:auto;flex:1}
+.note-item{width:100%;text-align:left;padding:10px 12px 10px 14px;border-radius:6px;display:block;position:relative;margin-bottom:2px}
+.note-item:hover{background:var(--hover)}
+.note-item.active{background:var(--paper)}
+.note-item.active::before{content:'';position:absolute;left:4px;top:10px;bottom:10px;width:2px;border-radius:1px;background:var(--accent)}
+.note-title{font-size:14px;font-weight:500;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.note-meta{display:flex;gap:8px;align-items:baseline;margin-top:2px;color:var(--muted);font-size:12px;line-height:1.4}
+.note-snippet{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--faint)}
+.empty-list{padding:32px 16px;text-align:center;color:var(--muted);font-size:13px;line-height:1.6}
+.side-foot{padding:8px 14px 12px;display:flex;justify-content:space-between;align-items:center;color:var(--faint);font-size:11px;border-top:1px solid var(--line)}
+.side-foot button{color:var(--muted);font-size:11px;padding:4px 6px;border-radius:4px}
+.side-foot button:hover{background:var(--hover);color:var(--ink)}
+#main{display:flex;flex-direction:column;min-width:0;background:var(--paper)}
+.editor-bar{display:flex;align-items:center;gap:8px;min-height:52px;padding:8px 14px;border-bottom:1px solid var(--line)}
+.meta-time{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.save-hint{font-size:11px;color:var(--faint);opacity:0;transition:opacity var(--fast) var(--ease)}
+.save-hint.on{opacity:1}
+.bar-spacer{flex:1}
+.mode-switch{display:flex;padding:3px;background:var(--panel);border:1px solid var(--line);border-radius:8px}
+.mode-switch button{height:28px;padding:0 10px;border-radius:5px;font-size:12px;font-weight:500;color:var(--muted)}
+.mode-switch button[aria-pressed=true]{background:var(--paper);color:var(--ink);box-shadow:0 1px 0 color-mix(in srgb,var(--ink) 8%,transparent)}
+.stage{flex:1;min-height:0;display:grid}
+#editor,#preview{grid-area:1/1;width:100%;height:100%;overflow:auto;padding:36px 8vw 80px;max-width:46rem;margin:0 auto}
+#editor{font-family:var(--write);font-size:19px;line-height:1.75;resize:none;caret-color:var(--accent)}
+#editor::placeholder{color:var(--faint)}
+#preview{font-family:var(--write);font-size:19px;line-height:1.75;display:none}
+#app.preview-on #editor{display:none}
+#app.preview-on #preview{display:block}
+#preview>:first-child{margin-top:0}
+#preview h1,#preview h2,#preview h3{font-weight:600;line-height:1.3;margin:1.4em 0 .5em}
+#preview h1{font-size:1.7em}#preview h2{font-size:1.35em}#preview h3{font-size:1.15em}
+#preview p{margin:0 0 .9em}
+#preview a{color:var(--accent);text-underline-offset:3px}
+#preview code{font-family:ui-monospace,monospace;font-size:.84em;background:var(--panel);padding:.1em .35em;border-radius:4px}
+#preview pre{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow:auto;margin:0 0 1.1em}
+#preview pre code{background:none;padding:0;font-size:14px;line-height:1.55}
+#preview ul,#preview ol{margin:0 0 1em;padding-left:1.4em}
+#preview li{margin:.2em 0}
+#preview blockquote{margin:0 0 1em;padding:.1em 0 .1em 1em;border-left:2px solid var(--accent);color:var(--muted)}
+#preview hr{border:0;height:1px;background:var(--line);margin:1.6em 0}
+#preview img{max-width:100%;border-radius:6px}
+#preview .task{list-style:none;margin-left:-1.2em}
+#preview .task input{margin-right:8px;accent-color:var(--accent)}
+#preview .empty-hint{color:var(--faint)}
+.blank{display:none;height:100%;place-items:center;text-align:center;padding:40px 24px;color:var(--muted)}
+#app.no-note .stage{display:none}#app.no-note .blank{display:grid}
+#app.no-note .meta-time,#app.no-note .mode-switch,#app.no-note [data-act=delete]{visibility:hidden}
+.blank h2{font-family:var(--write);font-weight:600;font-size:22px;color:var(--ink);margin:0 0 8px}
+.blank p{margin:0 0 20px;font-size:14px;line-height:1.6}
+.blank .cta{height:40px;padding:0 16px;border-radius:var(--radius);background:var(--ink);color:var(--paper);font-size:14px;font-weight:500}
+.blank .cta:hover{opacity:.9}
+.scrim{position:fixed;inset:0;background:color-mix(in srgb,var(--ink) 35%,transparent);display:none;place-items:center;z-index:40;padding:24px}
+.scrim.show{display:grid}
+.dialog{width:min(380px,100%);background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:22px 22px 16px;box-shadow:0 16px 40px color-mix(in srgb,var(--ink) 16%,transparent)}
+.dialog h2{font-family:var(--write);font-size:20px;font-weight:600;margin:0 0 8px}
+.dialog p{margin:0 0 18px;color:var(--muted);font-size:14px;line-height:1.55}
+.dialog-actions{display:flex;justify-content:flex-end;gap:8px}
+.dialog-actions button{height:36px;padding:0 14px;border-radius:var(--radius);font-size:13px;font-weight:500}
+.btn-ghost:hover{background:var(--hover)}
+.btn-danger{background:var(--danger);color:#f7eee8}
+.help{width:min(420px,100%)}
+.help table{width:100%;border-collapse:collapse;font-size:13px}
+.help td{padding:7px 0;border-bottom:1px solid var(--line)}
+.help td:last-child{color:var(--muted);text-align:right}
+.help kbd{font:11px var(--ui);border:1px solid var(--line);background:var(--panel);border-radius:4px;padding:1px 6px}
+.drawer-scrim{display:none;position:fixed;inset:0;background:color-mix(in srgb,var(--ink) 28%,transparent);z-index:20}
+@media(max-width:720px){
+  #app{grid-template-columns:1fr}
+  #sidebar{position:fixed;inset:0 auto 0 0;width:min(86vw,300px);z-index:30;transform:translateX(-105%);transition:transform var(--med) var(--ease);box-shadow:8px 0 32px color-mix(in srgb,var(--ink) 12%,transparent)}
+  #app.mobile-open #sidebar{transform:none;pointer-events:auto}
+  #app.mobile-open .drawer-scrim{display:block}
+  #editor,#preview{padding:24px 20px 64px;font-size:17px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div id='app'>
+  <div class='drawer-scrim' data-act='close-drawer'></div>
+  <aside id='sidebar' aria-label='รายการโน้ต'>
+    <div class='side-head'>
+      <a class='brand' href='#' data-act='home'>
+        <svg width='22' height='22' viewBox='0 0 22 22' fill='none' aria-hidden='true'><rect x='4' y='2.5' width='14' height='17' rx='1.4' stroke='currentColor' stroke-width='1.5'/><path d='M8 8h6M8 11.5h6M8 15h4' stroke='var(--accent)' stroke-width='1.5' stroke-linecap='round'/></svg>
+        <span class='brand-name'>สมุด</span>
+      </a>
+      <button class='icon-btn primary' data-act='new' title='โน้ตใหม่' aria-label='สร้างโน้ตใหม่'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.75' stroke-linecap='round'><path d='M12 5v14M5 12h14'/></svg></button>
+    </div>
+    <label class='search'>
+      <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.75' stroke-linecap='round' aria-hidden='true'><circle cx='11' cy='11' r='6.5'/><path d='M16.5 16.5L20 20'/></svg>
+      <input id='search' type='search' placeholder='ค้นหา…' autocomplete='off' spellcheck='false'>
+      <kbd>/</kbd>
+    </label>
+    <ul id='list' role='listbox' aria-label='โน้ต'></ul>
+    <div class='side-foot'><span id='count'></span><button type='button' data-act='help'>ปุ่มลัด</button></div>
+  </aside>
+  <main id='main'>
+    <div class='editor-bar'>
+      <button class='icon-btn' data-act='toggle-side' title='แถบข้าง' aria-label='สลับแถบข้าง'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='4' width='18' height='16' rx='2'/><path d='M9 4v16'/></svg></button>
+      <span class='meta-time' id='stamp'></span>
+      <span class='save-hint' id='saved'>บันทึกแล้ว</span>
+      <span class='bar-spacer'></span>
+      <div class='mode-switch' role='group' aria-label='โหมดแสดง'>
+        <button type='button' id='mode-edit' aria-pressed='true'>เขียน</button>
+        <button type='button' id='mode-preview' aria-pressed='false'>ตัวอย่าง</button>
+      </div>
+      <button class='icon-btn danger' data-act='delete' title='ลบโน้ต' aria-label='ลบโน้ต'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'><path d='M4 7h16M9 7V5h6v2M8 7l.7 12h6.6L16 7'/></svg></button>
+    </div>
+    <div class='stage'>
+      <textarea id='editor' spellcheck='true' placeholder='เริ่มเขียน…' aria-label='เนื้อหาโน้ต'></textarea>
+      <article id='preview' aria-label='ตัวอย่างมาร์กดาวน์'></article>
+    </div>
+    <div class='blank' id='blank'><div><h2>ยังไม่มีโน้ต</h2><p>สร้างหน้าใหม่เพื่อเริ่มเขียน<br>ข้อมูลจะอยู่ในเบราว์เซอร์นี้</p><button class='cta' data-act='new'>โน้ตใหม่</button></div></div>
+  </main>
+</div>
+<div class='scrim' id='confirm' role='dialog' aria-modal='true' aria-labelledby='confirm-title' hidden>
+  <div class='dialog'><h2 id='confirm-title'>ลบโน้ตนี้?</h2><p>จะถูกลบออกจากเครื่องนี้ กู้คืนไม่ได้</p><div class='dialog-actions'><button class='btn-ghost' data-act='cancel-del'>ยกเลิก</button><button class='btn-danger' data-act='ok-del'>ลบ</button></div></div>
+</div>
+<div class='scrim' id='help' role='dialog' aria-modal='true' aria-labelledby='help-title' hidden>
+  <div class='dialog help'><h2 id='help-title'>ปุ่มลัด</h2>
+    <table>
+      <tr><td><kbd>Ctrl</kbd> <kbd>N</kbd></td><td>โน้ตใหม่</td></tr>
+      <tr><td><kbd>Ctrl</kbd> <kbd>F</kbd> หรือ <kbd>/</kbd></td><td>ค้นหา</td></tr>
+      <tr><td><kbd>Ctrl</kbd> <kbd>E</kbd></td><td>สลับตัวอย่าง</td></tr>
+      <tr><td><kbd>Ctrl</kbd> <kbd>\</kbd></td><td>แถบข้าง</td></tr>
+      <tr><td><kbd>Ctrl</kbd> <kbd>Backspace</kbd></td><td>ลบโน้ต</td></tr>
+      <tr><td><kbd>Alt</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td><td>สลับโน้ต</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>ปิดแผง</td></tr>
+    </table>
+    <div class='dialog-actions' style='margin-top:14px'><button class='btn-ghost' data-act='close-help'>ปิด</button></div>
+  </div>
+</div>
+<script src='app.js'></script>
+</body>
+</html>
